@@ -9,13 +9,7 @@ from langchain.document_loaders import Docx2txtLoader
 from langchain.document_loaders import TextLoader
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
-from langchain.vectorstores import FAISS 
-from docx2pdf import convert
-import os
-import openai
-import sys
 
-openai_api_key = st.secrets["openai"]["api_key"]
 
 #input file loader
 def load_file(file_path):

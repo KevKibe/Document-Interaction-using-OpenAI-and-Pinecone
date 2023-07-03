@@ -1,4 +1,3 @@
-import langchain
 from langchain.document_loaders import PyPDFLoader
 from langchain.document_loaders import Docx2txtLoader
 from langchain.document_loaders import TextLoader
