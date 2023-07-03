@@ -1,0 +1,7 @@
+langchain
+openai
+pinecone-client
+tiktoken
+PyPDF2
+docx2pdf
+langchain[all]
