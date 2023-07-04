@@ -1,16 +1,7 @@
-import configparser
-
-
-
-
-
-
-config = configparser.ConfigParser()
-config.read('.env')
-openai_key = config.get('openai', 'OPENAI_API_KEY')
-pinecone_env_key = config.get('pinecone', 'PINECONE_ENVIRONMENT')
-pinecone_api_key = config.get('pinecone', 'PINECONE_API_KEY')
-
+import sys
+import time
+from file_loader import DocumentLoader
+from preprocessing import Preprocessor, ConversationChain
 
 class DocumentChatApp:
     def __init__(self):
@@ -18,7 +9,6 @@ class DocumentChatApp:
         self.preprocessor = Preprocessor()
         self.conversation_chain = ConversationChain()
         self.chat_history = []
-        openai.api_key = openai_api_key
 
     def run(self):
         yellow = "\033[0;33m"
@@ -26,9 +16,25 @@ class DocumentChatApp:
         white = "\033[0;39m"
         
         print(f"{yellow}---------------------------------------------------------------------------------")
-        print('Start your chat-based interaction with your documents')
+        print('Natural Language Based Document Quering')
         print('---------------------------------------------------------------------------------')
         
+        file_directory = input(f"{green}Enter the directory of the document: ")
+        start_time = time.time()  
+
+        documents = self.document_loader.load_file(file_directory)
+        start_time = time.time()  
+
+        if not documents:
+            print(f"{white}No documents found in the specified directory.")
+            return
+        
+        print(f"{white}Documents loaded successfully.")
+
+        end_time = time.time()  
+        execution_time = end_time - start_time
+        print(f"{white}Execution time: {execution_time:.2f} seconds")     
+
         while True:
             query = input(f"{green}Prompt: ")
             

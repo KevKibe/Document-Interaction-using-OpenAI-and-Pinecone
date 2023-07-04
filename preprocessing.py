@@ -4,6 +4,14 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
+import pinecone
+import configparser
+
+config = configparser.ConfigParser()
+config.read('.env')
+openai_key = config.get('openai', 'OPENAI_API_KEY')
+pinecone_env_key = config.get('pinecone', 'PINECONE_ENVIRONMENT')
+pinecone_api_key = config.get('pinecone', 'PINECONE_API_KEY')
 
 class Preprocessor:
     def get_text_chunks(self, text):
@@ -16,9 +24,17 @@ class Preprocessor:
         chunks = text_splitter.split_documents(text)
         return chunks
 
-    def get_vectorstore(self, text_chunks, openai_api_key):
-        vectordb = Chroma.from_documents(text_chunks, embedding=OpenAIEmbeddings(openai_api_key=openai_api_key))
-        return vectordb
+    def get_vectorstore(self, text_chunks):
+        config = configparser.ConfigParser()
+        config.read('.env')
+        pinecone_api_key = config.get('pinecone', 'PINECONE_API_KEY')
+        index_name = config.get('pinecone', 'PINECONE_INDEX_NAME')
+    
+        pinecone.init(api_key=pinecone_api_key)
+        pinecone.create_index(index_name=index_name, metric="cosine")
+        index = pinecone.Index(index_name=index_name)
+        index.upsert(items={i: text_chunks[i] for i in range(len(text_chunks))})
+        return index
 
 
 class ConversationChain:
