@@ -1,45 +1,45 @@
-from langchain.text_splitter import CharacterTextSplitter
-from langchain.vectorstores import Chroma
 from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.text_splitter import CharacterTextSplitter
 from langchain.chat_models import ChatOpenAI
+from langchain.vectorstores import Pinecone
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 import pinecone
-import configparser
+import os
+from dotenv import load_dotenv
+from file_loader import DocumentLoader
 
-config = configparser.ConfigParser()
-config.read('.env')
-openai_key = config.get('openai', 'OPENAI_API_KEY')
-pinecone_env_key = config.get('pinecone', 'PINECONE_ENVIRONMENT')
-pinecone_api_key = config.get('pinecone', 'PINECONE_API_KEY')
+load_dotenv('.env')
 
-class Preprocessor:
-    def get_text_chunks(self, text):
+openai_key = os.getenv('OPENAI_API_KEY')
+pinecone_env = os.getenv('PINECONE_ENVIRONMENT')
+pinecone_api_key = os.getenv('PINECONE_API_KEY')
+index_name = os.getenv('PINECONE_INDEX_NAME')
+
+
+class Chunks:
+    def get_chunks(self,documents):
         text_splitter = CharacterTextSplitter(
             separator="\n",
             chunk_size=1000,
-            chunk_overlap=200,
-            length_function=len
+            chunk_overlap=100,
+            length_function= len
         )
-        chunks = text_splitter.split_documents(text)
+        chunks = text_splitter.split_documents(documents)
         return chunks
-
-    def get_vectorstore(self, text_chunks):
-        config = configparser.ConfigParser()
-        config.read('.env')
-        pinecone_api_key = config.get('pinecone', 'PINECONE_API_KEY')
-        index_name = config.get('pinecone', 'PINECONE_INDEX_NAME')
     
-        pinecone.init(api_key=pinecone_api_key)
-        pinecone.create_index(index_name=index_name, metric="cosine")
-        index = pinecone.Index(index_name=index_name)
-        index.upsert(items={i: text_chunks[i] for i in range(len(text_chunks))})
-        return index
+class Vectorstore:    
+    def get_vectorstore(self, chunks):
+        pinecone.init(api_key=pinecone_api_key, environment=pinecone_env)
+        embeddings = OpenAIEmbeddings(openai_api_key=openai_key, model_name="ada")
+        vectorstore = Pinecone.from_texts(chunks, embeddings, index_name=index_name)
+        return vectorstore
 
 
 class ConversationChain:
     def get_conversation_chain(self, vectorstore):
-        llm = ChatOpenAI()
+        llm = ChatOpenAI(model_kwargs={'api_key': openai_key})
 
         memory = ConversationBufferMemory(
             memory_key='chat_history', return_messages=True)
