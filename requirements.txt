@@ -6,3 +6,4 @@ PyPDF2
 docx2pdf
 pypdf
 docx2txt
+scikit-learn

@@ -9,6 +9,7 @@ import pinecone
 import os
 from dotenv import load_dotenv
 from file_loader import DocumentLoader
+from sklearn.decomposition import PCA
 
 load_dotenv('.env')
 
@@ -31,11 +32,20 @@ class Chunks:
     
 class Vectorstore:    
     def get_vectorstore(self, chunks):
-        pinecone.init(api_key=pinecone_api_key, environment=pinecone_env)
-        embeddings = OpenAIEmbeddings(openai_api_key=openai_key, model_name="ada")
-        vectorstore = Pinecone.from_texts(chunks, embeddings, index_name=index_name)
-        return vectorstore
 
+        pinecone.init(api_key=pinecone_api_key, environment=pinecone_env)
+        embeddings = OpenAIEmbeddings(openai_api_key=openai_key)
+        doc_embeddings = []
+        for text in chunks:
+            doc_embedding =  embeddings.embed_documents(" ".join(str(text).split("\n")))
+            doc_embeddings.append(doc_embedding)
+        
+        # reduce the dimensionality of the embeddings using PCA
+        pca = PCA(n_components=25)
+        reduced_embeddings = pca.fit_transform(doc_embeddings)
+        vectorstore = Pinecone.from_documents(documents, reduced_embeddings, index_name= 'index1')
+        #vectorstore = vectorstore.to_numpy()
+        return vectorstore
 
 class ConversationChain:
     def get_conversation_chain(self, vectorstore):
