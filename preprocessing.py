@@ -43,7 +43,7 @@ class Vectorstore:
         # reduce the dimensionality of the embeddings using PCA
         pca = PCA(n_components=25)
         reduced_embeddings = pca.fit_transform(doc_embeddings)
-        vectorstore = Pinecone.from_documents(documents, reduced_embeddings, index_name= 'index1')
+        vectorstore = Pinecone.from_documents(chunks, reduced_embeddings, index_name= 'index1')
         #vectorstore = vectorstore.to_numpy()
         return vectorstore
 
