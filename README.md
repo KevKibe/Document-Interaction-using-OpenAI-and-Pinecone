@@ -24,3 +24,6 @@ This is an application that allows users to interact with a text, pdf or word do
 - The chatbot will process your query and provide an answer based on the content of the file.
 - Continue the conversation by entering additional queries.
 - Exit the conversatio by entering command `q`
+
+
+**:zap: I'm currently open for roles in Data Science, Machine Learning, NLP and Computer Vision.**
